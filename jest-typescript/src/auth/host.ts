@@ -1,14 +1,16 @@
-import createError from 'http-errors'
+import { NextFunction, Response } from "express";
 
-export const hostOnly = (req, res, next) => {
-    if (req.user.role === 'Host') {
-        next()
-    } else {
-        next(createError(403, "Host only!"))
-    }
-}
+import createError from "http-errors";
 
-export const accomodationHost = (req, res, next) => {
+export const hostOnly = (req: any, res: Response, next: NextFunction) => {
+	if (req.user.role === "Host") {
+		next();
+	} else {
+		next(createError(403, "Host only!"));
+	}
+};
+
+export const accomodationHost = (req: any, res: Response, next: NextFunction) => {
 	console.log("🍕", req);
 	if (req.body.user === req.user._id.toString()) {
 		next();

@@ -1,62 +1,173 @@
-import {User} from "../../types/index"
-import bcrypt from "bcrypt";
-import mongoose from "mongoose";
+import { JWTAuthenticate, refreshTokens } from "../../auth/tools";
+import { NextFunction, Request, Response } from "express";
 
-const { Schema, model } = mongoose;
+import Accomodation from "../accomodations/schema";
+import { JWTMiddleware } from "../../auth/middlewares";
+import User from "./schema";
+import { UserType } from "../../types/index";
+import createError from "http-errors";
+import express from "express";
+import getUser from "./schema";
 
+const usersRouter = express.Router();
 
-const UsersSchema = new Schema<User>(
-	{
-		name: { type: String, required: true, default: "User" },
-		surname: { type: String, required: true, default: "Surname" },
-		email: { type: String, required: true },
-		password: { type: String, required: true },
-		role: { type: String, required: true, enum: ["Host", "User"], default: "User" },
-		avatar: { type: String },
-	},
-	{ timestamps: true }
+//><><><><> CREATES NEW USER, RETURNS ID <><><><><\\
+
+usersRouter.post("/register", async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const newUser = new User(req.body);
+		const { _id } = await newUser.save();
+		res.status(201).send({ _id });
+	} catch (error) {
+		next(error);
+	}
+});
+
+//><><><><> CHECKS CREDENTIALS, RETURNS NEW ACCESS TOKEN <><><><><\\
+
+usersRouter.post("/login", async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const { email, password } = req.body;
+		const user = await User.checkCredentials(email, password);
+		if (user) {
+			const accessToken = await JWTAuthenticate(user);
+			res.send({ accessToken });
+		} else {
+			next(createError(401, "Credentials not valid!"));
+		}
+	} catch (error) {
+		next(error);
+	}
+});
+
+//><><><><> GET ALL USERS <><><><><\\
+
+usersRouter.get("/", JWTMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const users = await getUser.find({});
+		res.send(users);
+	} catch (error) {
+		next(createError(500, "An error occurred while getting users"));
+	}
+});
+
+// ><><><><> GET LOGGED IN USER INFO <><><><><\\
+
+usersRouter.get("/me", JWTMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		res.send(req.user);
+	} catch (error) {
+		console.log(error);
+		next(createError(500, "An error occurred while finding you"));
+	}
+});
+
+// ><><><><> GET SPECIFIC USER BY ID <><><><><\\
+
+usersRouter.get("/:id", JWTMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const author = await getUser.find({ user: req.params.id });
+		author ? res.send(author) : next(createError(404, `User ${req.params.id} not found`));
+	} catch (error) {
+		next(error);
+	}
+});
+
+// ><><><><> UPDATE USER INFO BY ID <><><><><\\
+
+usersRouter.put("/:id", JWTMiddleware, async (req: any, res: Response, next: NextFunction) => {
+	try {
+		const userId = req.params.id.toString();
+		const myId = req.user._id;
+
+		if (userId === myId) {
+			const updatedUser = await User.findOneAndUpdate({ _id: myId }, req.body, {
+				new: true,
+				runValidators: true,
+			});
+			if (updatedUser) {
+				res.send(updatedUser);
+			} else {
+				next(createError(404, `User Not Found!`));
+			}
+		} else {
+			next(createError(404, `You are not authorized!`));
+		}
+	} catch (error) {
+		next(error);
+	}
+	// const users = await User.getUser(req.params.id);
+	// if (!users) {
+	// 	next(createError(404, "id not found"));
+	// }
+	// const updatedUser = {
+	// 	...req.body,
+	// 	lastUpdatedOn: new Date(),
+	// };
+
+	// res.send(updatedUser);
+});
+
+// ><><><><> DELETE USER BY ID <><><><><\\
+
+usersRouter.delete("/:id", JWTMiddleware, async (req: any, res: Response, next: NextFunction) => {
+	try {
+		const userId = req.params.id.toString();
+		const myId = req.user._id.toString();
+
+		if (userId === myId) {
+			const deletedUser = await User.findOneAndDelete({ _id: myId });
+			if (deletedUser) {
+				res.status(204).send();
+			} else {
+				next(createError(404, `User Not Found!`));
+			}
+		} else {
+			next(createError(404, `You are not authorized!`));
+		}
+	} catch (error) {
+		next(error);
+	}
+
+	// try {
+	// 	const users = await getUser.findByIdAndDelete(req.params.id);
+	// 	if (users) {
+	// 		res.status(204, "Success").send();
+	// 	} else {
+	// 		next(createError(404, `User ${req.params.id} not found`));
+	// 	}
+	// } catch (error) {
+	// 	console.log(error);
+	// 	next(createError(500, "An error occurred while deleting author"));
+	// }
+});
+
+// ><><><><> GET LOGGED IN USER ACCOMODATIONS <><><><><\\
+
+usersRouter.get(
+	"/me/accomodations",
+	JWTMiddleware,
+	async (req: any, res: Response, next: NextFunction) => {
+		try {
+			const myAccomo = await Accomodation.find({ user: req.user._id });
+			res.send(myAccomo);
+		} catch (error) {
+			console.log(error);
+			next(createError(500, "An error occurred while finding you"));
+		}
+	}
 );
 
+//><><><><> REFRESH TOKEN CHECK <><><><><\\
 
-//<><><><>< HASH THE PASSWORDS <><><><><
-
-UsersSchema.pre("save", async function (next) {
-	const newUser = this;
-	const plainPW = newUser.password!; //we use the ! non-null assertion operator here to promise it isnt undefined
-	if (newUser.isModified("password")) {
-		newUser.password = await bcrypt.hash(plainPW, 10);
+usersRouter.post("/refreshToken", async (req, res: Response, next: NextFunction) => {
+	try {
+		const { actualRefreshToken } = req.body;
+		const { accessToken, refreshToken }: any = await refreshTokens(actualRefreshToken);
+		res.send({ accessToken, refreshToken });
+	} catch (error) {
+		next(error);
 	}
-	next();
 });
 
-//<><><><>< HIDES PASSWORD AND __V FROM JSON RETURN <><><><><
-
-UsersSchema.methods.toJSON = function () {
-	const userDocument = this;
-	const userObject = userDocument.toObject();
-	delete userObject.password
-	delete userObject.__v;
-	return userObject;
-};
-
-//<><><><>< COMPARE PASSWORDS <><><><><
-
-UsersSchema.statics.checkCredentials = async function (email, plainPW) {
-	const user = await this.findOne({ email });
-	if (user) {
-		const isMatch = await bcrypt.compare(plainPW, user.password);
-		return isMatch ? user : null;
-
-	} else {
-		return null;
-	}
-};
-
-//<><><><>< MONGOOSE GETUSERS <><><><><
-
-UsersSchema.static("getUser", async function (id) {
-	const user = await this.findOne({ _id: id })
-	return user;
-});
-
-export default model<User>("User", UsersSchema);
+export default usersRouter;

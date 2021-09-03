@@ -1,8 +1,9 @@
-import supertest from "supertest";
-import server from "../src/index.js";
-import mongoose from "mongoose";
 import dotenv from "dotenv";
 import jest from "jest"
+import mongoose from "mongoose";
+import server from "../src/index";
+import supertest from "supertest";
+
 // import AccomodationModel from "../models/accomodation/schema.js"
 
 dotenv.config();
@@ -12,7 +13,7 @@ const request = supertest(server);
 beforeAll((done) => {
 	console.log(process.env.MONGOOSE_CONNECTION);
 
-	mongoose.connect(process.env.MONGOOSE_CONNECTION, { useNewUrlParser: true }).then(() => {
+	mongoose.connect(process.env.MONGOOSE_CONNECTION!, { useNewUrlParser: true }).then(() => {
 		console.log("Successfully connected to Atlas! 🍌");
 		done();
 	});

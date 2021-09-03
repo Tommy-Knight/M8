@@ -1,27 +1,28 @@
-import User from "../services/users/schema.js"
-import createError from "http-errors"
-import { verifyJWT } from "./tools.js"
+import { NextFunction, Response } from "express";
 
-export const JWTMiddleware = async (req, res, next) => {
-    if (!req.headers.authorization) {
-        next(createError(401, "Provide authorization header!"))
-    } else {
-        try {
-            const token = req.headers.authorization.replace("Bearer ", "")
+import User from "../services/users/schema";
+import createError from "http-errors";
+import { verifyJWT } from "./tools";
 
-            const decodedToken = await verifyJWT(token)
+export const JWTMiddleware = async (req: any, res: Response, next: NextFunction) => {
+	if (!req.headers.authorization) {
+		next(createError(401, "Provide authorization header!"));
+	} else {
+		try {
+			const token = req.headers.authorization.replace("Bearer ", "");
 
-            const user = await User.findById(decodedToken._id)
+			const decodedToken: any = await verifyJWT(token)!;
 
-            if (user) {
-                req.user = user
-                next()
-            } else {
-                next(createError(404, "user not found!"))
-            }
+			const user = await User.findById(decodedToken._id);
 
-        } catch (error) {
-            next(createError(401, "Token expired!"))
-        }
-    }
-}
+			if (user) {
+				req.user = user;
+				next();
+			} else {
+				next(createError(404, "user not found!"));
+			}
+		} catch (error) {
+			next(createError(401, "Token expired!"));
+		}
+	}
+};

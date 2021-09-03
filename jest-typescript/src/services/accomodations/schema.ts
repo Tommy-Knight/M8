@@ -1,5 +1,5 @@
 import { AccomodationType } from "../../types/index";
-import User from "../users/schema.js";
+import User from "../users/schema";
 import createError from "http-errors";
 import mongoose from "mongoose";
 
@@ -34,7 +34,7 @@ AccomodationSchema.pre("save", async function (done) {
 			const error = new Error("this author does not exist");
 			done(createError(400, error));
 		}
-	} catch (error) {
+	} catch (error: any) {
 		done(error);
 	}
 });

@@ -1,10 +1,18 @@
-import {User} from "../../types/index"
+import mongoose, { Model } from "mongoose";
+
+import { UserType } from "../../types/index";
 import bcrypt from "bcrypt";
-import mongoose from "mongoose";
+import { refreshTokens } from "../../auth/tools";
 
 const { Schema, model } = mongoose;
 
-const UsersSchema = new Schema<User>(
+export interface UserDocument extends Document, UserType {}
+
+export interface UserMod extends Model<UserDocument> {
+	checkCredentials(email: string, password: string): Promise<UserDocument | null>;
+}
+
+const UsersSchema = new Schema<UserDocument>(
 	{
 		name: { type: String, required: true, default: "User" },
 		surname: { type: String, required: true, default: "Surname" },
@@ -44,7 +52,6 @@ UsersSchema.statics.checkCredentials = async function (email, plainPW) {
 	if (user) {
 		const isMatch = await bcrypt.compare(plainPW, user.password);
 		return isMatch ? user : null;
-
 	} else {
 		return null;
 	}
@@ -53,8 +60,8 @@ UsersSchema.statics.checkCredentials = async function (email, plainPW) {
 //<><><><>< MONGOOSE GETUSERS <><><><><
 
 UsersSchema.static("getUser", async function (id) {
-	const user = await this.findOne({ _id: id })
+	const user = await this.findOne({ _id: id });
 	return user;
 });
 
-export default model<User>("User", UsersSchema);
+export default model<UserDocument, UserMod>("User", UsersSchema);

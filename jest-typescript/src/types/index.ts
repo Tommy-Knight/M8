@@ -1,10 +1,12 @@
-export interface User {
+export interface UserType {
 	name?: string;
 	surname?: string;
 	email?: string;
 	password?: string;
 	role?: string;
 	avatar?: string;
+	refreshToken?: string
+	_id?: string
 }
 
 export interface AccomodationType{
@@ -12,5 +14,5 @@ export interface AccomodationType{
     city?: string;
     description?: string
     maxGuests?: number;
-    user?: User
+    user?: UserType
 }
