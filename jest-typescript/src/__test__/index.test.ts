@@ -1,10 +1,10 @@
 import dotenv from "dotenv";
-import jest from "jest"
+import jest from "jest";
 import mongoose from "mongoose";
 import server from "../server";
 import supertest from "supertest";
 
-dotenv.config();
+require("dotenv").config();
 
 const request = supertest(server);
 
@@ -21,20 +21,55 @@ describe("Stage I - Testing the test env", () => {
 		expect(false).toBeFalsy();
 	});
 });
-// beforeAll((done) => {
-// 	console.log(process.env.MONGOOSE_CONNECTION);
 
-// 	mongoose.connect(process.env.MONGOOSE_CONNECTION!, { useNewUrlParser: true }).then(() => {
-// 		console.log("Successfully connected to Atlas! 🍌");
-// 		done();
+describe("Testing rooms service", () => {
+	describe("Stage I - Testing the test env", () => {
+		it("should test that true is true", () => {
+			expect(true).toBe(true);
+		});
+	});
+	// beforeAll((done) => {
+	// 	console.log(server)
+	// 		mongoose
+	// 			.connect(
+	// 				process.env.MONGO_CONNECTION as string,
+	// 				{ useNewUrlParser: true , useUnifiedTopology: true }
+	// 			)
+	// 			.then(() => {
+	// 				console.log("Connected to Atlas");
+	// 				server.listen(3069, () => {
+	// 					console.log(`🕶`);
+	// 				});
+	// 			});
+	// 	});
+	// 	afterAll((done) => {
+	// 		// Drop dummy db
+	// 	mongoose.connection.dropDatabase(() => {
+	// 		mongoose.connection.close(() => {
+	// 			done();
+	// 			});
+	// 		});
+	// 	});
+});
+
+
+// beforeAll((done) => {
+// mongoose.connect(process.env.MONGO_CONNECTION!, {
+// 		useNewUrlParser: true,
+// 		useUnifiedTopology: true,
+// 		useFindAndModify: false,
+// 	})
+// 	.then(() => {
+// 		server.listen(3069, () => {
+// 			console.log("Running on port", 3069, "🎇");
+// 			console.timeEnd("Server startup");
+// 		});
 // 	});
 // });
-
 // afterAll((done) => {
 // 	mongoose.connection.dropDatabase(() => {
 // 		mongoose.connection.close(() => {
 // 			console.log("Closed connection to Atlas!");
-
 // 			done();
 // 		});
 // 	});
@@ -128,7 +163,7 @@ describe("Stage I - Testing the test env", () => {
 // 	})
 
 // 	it("getting accomodations for city by id will return 200", async () => {
-		
+
 // 		const response = await request.post("/accomodation").send(validAccomo)
 
 // 		const _response = await request.get("/destination/" + response.body.city)

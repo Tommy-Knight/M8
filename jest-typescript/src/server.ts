@@ -8,29 +8,22 @@ import accomodationsRouter from "./services/accomodations/index";
 import cors from "cors";
 import express from "express";
 import listEndpoints from "express-list-endpoints";
-import mongoose from "mongoose";
 import passport from "passport";
 import usersRouter from "./services/users/index";
 
 // import facebookStrategy from "./auth/oauth";
-let mongoTime = ""
-mongoTime =
-	process.env.MONGO_CONNECTION! ||
-	"mongodb+srv://test:test@cluster0.10wgz.mongodb.net/Trivago?retryWrites=true&w=majority";
 
-process.env.MONGO_CONNECTION && require("dotenv").config();
-
+// process.env.MONGO_CONNECTION && require("dotenv").config();
 
 console.time("Server startup");
 const server = express();
-const port = process.env.PORT || 3069;
 
 // passport.use("facebook", facebookStrategy);
 
 // ><><><><: MIDDLEWARES :><><><>< \\
 
-server.use(express.json());
 server.use(cors());
+server.use(express.json());
 server.use(passport.initialize());
 
 // ><><><><: ROUTES :><><><>< \\
@@ -47,17 +40,17 @@ server.use(catchAllErrorHandler);
 
 // ><><><><: MONGO TIME :><><><>< \\
 
-mongoose
-	.connect(mongoTime, {
-		useNewUrlParser: true,
-		useUnifiedTopology: true,
-		useFindAndModify: false,
-	})
-	.then(() => {
-		server.listen(port, () => {
-			// console.log("Running on port", port, "🎇");
-			// console.timeEnd("Server startup");
-		});
-	});
+// mongoose
+// 	.connect(process.env.MONGO_CONNECTION, {
+// 		useNewUrlParser: true,
+// 		useUnifiedTopology: true,
+// 		useFindAndModify: false,
+// 	})
+// 	.then(() => {
+// 		server.listen(port, () => {
+// 			console.log("Running on port", port, "🎇");
+// 			console.timeEnd("Server startup");
+// 		});
+// 	});
 
-	export default server
+export default server;
