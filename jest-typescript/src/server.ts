@@ -13,7 +13,10 @@ import passport from "passport";
 import usersRouter from "./services/users/index";
 
 // import facebookStrategy from "./auth/oauth";
-
+let mongoTime = ""
+mongoTime =
+	process.env.MONGO_CONNECTION! ||
+	"mongodb+srv://test:test@cluster0.10wgz.mongodb.net/Trivago?retryWrites=true&w=majority";
 
 process.env.MONGO_CONNECTION && require("dotenv").config();
 
@@ -45,14 +48,16 @@ server.use(catchAllErrorHandler);
 // ><><><><: MONGO TIME :><><><>< \\
 
 mongoose
-	.connect(process.env.MONGO_CONNECTION!, {
+	.connect(mongoTime, {
 		useNewUrlParser: true,
 		useUnifiedTopology: true,
 		useFindAndModify: false,
 	})
 	.then(() => {
 		server.listen(port, () => {
-			console.log("Running on port", port, "🎇");
-			console.timeEnd("Server startup");
+			// console.log("Running on port", port, "🎇");
+			// console.timeEnd("Server startup");
 		});
 	});
+
+	export default server
