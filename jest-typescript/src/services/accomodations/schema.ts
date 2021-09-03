@@ -1,9 +1,11 @@
+import { AccomodationType } from "../../types/index";
 import User from "../users/schema.js";
+import createError from "http-errors";
 import mongoose from "mongoose";
 
 const { Schema, model } = mongoose;
 
-const AccomodationSchema = new Schema(
+const AccomodationSchema = new Schema<AccomodationType>(
 	{
 		name: {
 			type: String,
@@ -17,7 +19,7 @@ const AccomodationSchema = new Schema(
 			type: String,
 			required: true,
 		},
-		maxGuests: { type: Number , default: 1, required: true, },
+		maxGuests: { type: Number, default: 1, required: true },
 		user: { type: Schema.Types.ObjectId, ref: "User" },
 	},
 	{ timestamps: true }
@@ -30,8 +32,7 @@ AccomodationSchema.pre("save", async function (done) {
 			done();
 		} else {
 			const error = new Error("this author does not exist");
-			error.status = 400;
-			done(error);
+			done(createError(400, error));
 		}
 	} catch (error) {
 		done(error);

@@ -1,9 +1,11 @@
+import {User} from "../../types/index"
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 
 const { Schema, model } = mongoose;
 
-const UsersSchema = new Schema(
+
+const UsersSchema = new Schema<User>(
 	{
 		name: { type: String, required: true, default: "User" },
 		surname: { type: String, required: true, default: "Surname" },
@@ -15,11 +17,12 @@ const UsersSchema = new Schema(
 	{ timestamps: true }
 );
 
+
 //<><><><>< HASH THE PASSWORDS <><><><><
 
 UsersSchema.pre("save", async function (next) {
 	const newUser = this;
-	const plainPW = newUser.password;
+	const plainPW = newUser.password!; //we use the ! non-null assertion operator here to promise it isnt undefined
 	if (newUser.isModified("password")) {
 		newUser.password = await bcrypt.hash(plainPW, 10);
 	}
@@ -31,7 +34,7 @@ UsersSchema.pre("save", async function (next) {
 UsersSchema.methods.toJSON = function () {
 	const userDocument = this;
 	const userObject = userDocument.toObject();
-	delete userObject.password;
+	delete userObject.password
 	delete userObject.__v;
 	return userObject;
 };
@@ -56,4 +59,4 @@ UsersSchema.static("getUser", async function (id) {
 	return user;
 });
 
-export default new model("User", UsersSchema);
+export default model<User>("User", UsersSchema);

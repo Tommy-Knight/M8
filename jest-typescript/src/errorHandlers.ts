@@ -1,4 +1,4 @@
-export const notFoundErrorHandler = (err, req, res, next) => {
+export const notFoundErrorHandler = ({err, req, res, next}:any) => {
 	if (err.status === 404) {
 		res.status(404).send(err.message || "Error not found!");
 	} else {
@@ -6,7 +6,7 @@ export const notFoundErrorHandler = (err, req, res, next) => {
 	}
 };
 
-export const badRequestErrorHandler = (err, req, res, next) => {
+export const badRequestErrorHandler = ({err, req, res, next}:any) => {
 	if (err.status === 400) {
 		res.status(400).send(err.errors);
 	} else {
@@ -14,7 +14,7 @@ export const badRequestErrorHandler = (err, req, res, next) => {
 	}
 };
 
-export const catchAllErrorHandler = (err, req, res, next) => {
+export const catchAllErrorHandler = ({err, req, res, next}:any) => {
 	res.status(err.status || 500).send(err.message || "Generic Server Error");
 	console.log(err);
 };

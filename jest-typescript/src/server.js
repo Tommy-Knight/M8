@@ -2,16 +2,16 @@ import {
 	badRequestErrorHandler,
 	catchAllErrorHandler,
 	notFoundErrorHandler,
-} from "./errorHandlers.js";
+} from "./errorHandlers.ts";
 
-import accomodationsRouter from "./services/accomodations/index.js"
+import accomodationsRouter from "./services/accomodations/index.ts"
 import cors from "cors";
 import express from "express";
-import facebookStrategy from './auth/oauth.js'
+import facebookStrategy from './auth/oauth.ts'
 import listEndpoints from "express-list-endpoints";
 import mongoose from "mongoose";
 import passport from 'passport'
-import usersRouter from "./services/users/index.js"
+import usersRouter from "./services/users/index.ts"
 
 console.time("Server startup");
 const server = express();
